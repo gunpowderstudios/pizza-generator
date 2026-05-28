@@ -182,7 +182,7 @@
 
   <div class="controls">
     <select id="mode">
-      <option value="deck">Play full shuffled 60-card deck</option>
+      <option value="deck">Play full shuffled 30-card deck</option>
       <option value="random">Random endless orders</option>
       <option value="easy">Easy only</option>
       <option value="medium">Medium only</option>
@@ -295,7 +295,7 @@
       }
 
       if (used >= deck.length) {
-        document.getElementById('status').textContent = 'All 60 orders used. Winner is the player with the most cash!';
+        document.getElementById('status').textContent = 'All 30 orders used. Winner is the player with the most cash!';
         return null;
       }
 
