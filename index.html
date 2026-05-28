@@ -61,12 +61,12 @@
       transform: translate(-50%, -50%);
     }
 
-    .cheese { width: 66px; height: 66px; background: #fff24a; border-radius: 50%; }
-    .mushroom { width: 62px; height: 62px; background: #999985; border-radius: 50%; }
-    .pepper { width: 72px; height: 72px; background: #3daf49; border-radius: 50%; }
-    .sausage { width: 50px; height: 50px; background: #ad5522; border-radius: 50%; }
-    .ham { width: 96px; height: 42px; background: #e96ca7; }
-    .olive { width: 44px; height: 44px; background: #000; border-radius: 50%; }
+    .cheese { width: 66px; height: 66px; background: #fff24a; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); }
+    .mushroom { width: 62px; height: 62px; background: #999985; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); }
+    .pepper { width: 72px; height: 72px; background: #3daf49; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); }
+    .sausage { width: 50px; height: 50px; background: #ad5522; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); }
+    .ham { width: 96px; height: 42px; background: #e96ca7; border: 2px solid rgba(255,255,255,0.9); }
+    .olive { width: 44px; height: 44px; background: #000; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); }
 
     .price {
       font-size: 42px;
@@ -362,25 +362,39 @@
       topping.style.width = `${s.w}px`;
       topping.style.height = `${s.h}px`;
 
-      // Random but evenly spread from the centre using a sunflower/golden-angle pattern.
-      // This avoids clumps while still looking naturally placed by hand.
       const cx = 135;
       const cy = 135;
       const redRadius = 105;
       const maxHalf = Math.max(s.w, s.h) / 2;
-      const safeRadius = redRadius - maxHalf - 4;
 
+      // Keep the whole ingredient safely inside the red pizza base.
+      const safeRadius = redRadius - maxHalf - 6;
+
+      // Spread from the outside edge inwards, like placing toppings around the pizza first.
+      // This gives better visual spacing than starting in the middle.
       const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-      const t = total <= 1 ? 0 : (index + 0.5) / total;
-      const radius = Math.sqrt(t) * safeRadius;
-      const angle = index * goldenAngle + rand(-18, 18) * Math.PI / 180;
+      const angle = index * goldenAngle + rand(-12, 12) * Math.PI / 180;
+
+      const outerCount = Math.ceil(total * 0.65);
+      let radius;
+
+      if (index < outerCount) {
+        // First toppings go on the outer safe ring.
+        radius = safeRadius * rand(82, 100) / 100;
+      } else {
+        // Later toppings move towards the middle.
+        const innerIndex = index - outerCount;
+        const innerTotal = Math.max(1, total - outerCount);
+        const innerStep = innerTotal === 1 ? 0.45 : innerIndex / (innerTotal - 1);
+        radius = safeRadius * (0.55 - innerStep * 0.32);
+      }
 
       let x = cx + Math.cos(angle) * radius;
       let y = cy + Math.sin(angle) * radius;
 
-      // Small hand-made nudge, still kept safely inside the red circle.
-      x += rand(-4, 4);
-      y += rand(-4, 4);
+      // Tiny handmade nudge, then clamp again so nothing gets cut off.
+      x += rand(-3, 3);
+      y += rand(-3, 3);
 
       const dx = x - cx;
       const dy = y - cy;
@@ -397,7 +411,7 @@
       topping.style.top = `${y}px`;
       topping.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
 
-      // Larger/flatter ingredients sit behind smaller ones. Olives are solid black again.
+      // Larger/flatter ingredients sit behind smaller ones. Olives are solid black.
       const layer = {
         cheese: 1,
         mushroom: 4,
