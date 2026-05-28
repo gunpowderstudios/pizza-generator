@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pizza Order Generator</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #f7f3e8;
+      color: #1f1f1f;
+      text-align: center;
+      padding: 18px;
+    }
+
+    h1 {
+      margin: 8px 0 4px;
+      font-size: 32px;
+    }
+
+    .sub {
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+
+    .card {
+      width: min(92vw, 360px);
+      margin: 14px auto;
+      background: #82bd9f;
+      border-radius: 22px;
+      padding: 18px 18px 22px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .order-title {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .pizza {
+      position: relative;
+      width: 270px;
+      height: 270px;
+      border-radius: 50%;
+      background: #d91e2b;
+      border: 22px solid #d9d08c;
+      box-shadow: inset 0 0 0 2px #fff4d6;
+      overflow: hidden;
+    }
+
+    .topping {
+      position: absolute;
+      transform: translate(-50%, -50%);
+    }
+
+    .cheese { width: 66px; height: 66px; background: #fff24a; border-radius: 50%; }
+    .mushroom { width: 62px; height: 62px; background: #999985; border-radius: 50%; }
+    .pepper { width: 72px; height: 72px; background: #3daf49; border-radius: 50%; }
+    .sausage { width: 50px; height: 50px; background: #ad5522; border-radius: 50%; }
+    .ham { width: 96px; height: 42px; background: #e96ca7; }
+    .olive { width: 44px; height: 44px; background: #000; border-radius: 50%; }
+
+    .price {
+      font-size: 42px;
+      margin: 12px 0 0;
+    }
+
+    .difficulty {
+      font-size: 24px;
+      margin-top: 3px;
+    }
+
+    .ingredients {
+      background: #fffdf5;
+      border-radius: 18px;
+      padding: 12px;
+      margin: 12px auto;
+      max-width: 420px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .ingredients h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      font-size: 18px;
+      text-align: left;
+    }
+
+    .pill {
+      background: #f0ead6;
+      padding: 8px 10px;
+      border-radius: 999px;
+    }
+
+    .controls {
+      max-width: 420px;
+      margin: 12px auto 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button, select {
+      font-size: 17px;
+      padding: 13px 10px;
+      border-radius: 12px;
+      border: none;
+      font-weight: bold;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button {
+      background: #d62828;
+      color: white;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #333;
+    }
+
+    select {
+      background: white;
+      grid-column: span 2;
+    }
+
+    .status {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      margin-top: 8px;
+      color: #555;
+    }
+
+    .tiny {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      color: #555;
+      max-width: 420px;
+      margin: 10px auto;
+      line-height: 1.35;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pizza Order Generator</h1>
+  <p class="sub">Digital order deck for testing — no printing needed.</p>
+
+  <div class="card">
+    <div>
+      <div class="order-title">Order</div>
+      <div id="pizza" class="pizza"></div>
+    </div>
+    <div>
+      <div id="price" class="price">£10</div>
+      <div id="difficulty" class="difficulty">Easy</div>
+    </div>
+  </div>
+
+  <div class="ingredients hidden">
+    <h2 id="orderName">Tap Next Order</h2>
+    <div id="ingredientList" class="list"></div>
+  </div>
+  </div>
+
+  <div class="controls">
+    <select id="mode">
+      <option value="deck">Play full shuffled 60-card deck</option>
+      <option value="random">Random endless orders</option>
+      <option value="easy">Easy only</option>
+      <option value="medium">Medium only</option>
+      <option value="hard">Hard only</option>
+    </select>
+    <button onclick="nextOrder()">Next Order</button>
+    <button class="secondary" onclick="resetDeck()">Reset Deck</button>
+    <button class="secondary" onclick="toggleInfo()" style="grid-column: span 2;">Show / Hide Ingredient List (Debug)</button>
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <p class="tiny hidden">
+    Test rule: players only need to match the ingredient amounts shown. The shape/layout on the pizza is for fun.
+  </p>
+
+  <script>
+    const ingredients = [
+      { name: 'Cheese', key: 'cheese' },
+      { name: 'Mushroom', key: 'mushroom' },
+      { name: 'Pepper', key: 'pepper' },
+      { name: 'Sausage', key: 'sausage' },
+      { name: 'Ham', key: 'ham' },
+      { name: 'Olive', key: 'olive' }
+    ];
+
+    const difficultySettings = {
+      easy:   { label: 'Easy',   price: 10, cards: 30, minTypes: 2, maxTypes: 3, minTotal: 3,  maxTotal: 5 },
+      medium: { label: 'Medium', price: 20, cards: 20, minTypes: 3, maxTypes: 5, minTotal: 6,  maxTotal: 8 },
+      hard:   { label: 'Hard',   price: 30, cards: 10, minTypes: 5, maxTypes: 6, minTotal: 9,  maxTotal: 12 }
+    };
+
+    let deck = [];
+    let used = 0;
+
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function makeOrder(difficultyKey) {
+      const settings = difficultySettings[difficultyKey];
+
+      // Every pizza must have at least 2 cheese so it reads clearly as a pizza.
+      const counts = { cheese: 2 };
+
+      const otherIngredients = ingredients.filter(item => item.key !== 'cheese');
+      const totalCount = rand(settings.minTotal, settings.maxTotal);
+      const otherTotal = Math.max(1, totalCount - 2);
+
+      const typeCount = Math.min(
+        rand(settings.minTypes, settings.maxTypes),
+        otherIngredients.length + 1
+      );
+
+      const otherTypeCount = Math.max(1, typeCount - 1);
+      const chosen = shuffle([...otherIngredients]).slice(0, otherTypeCount);
+
+      chosen.forEach(item => counts[item.key] = 1);
+      let remaining = otherTotal - chosen.length;
+
+      while (remaining > 0) {
+        const item = chosen[rand(0, chosen.length - 1)];
+        counts[item.key]++;
+        remaining--;
+      }
+
+      return {
+        difficultyKey,
+        difficulty: settings.label,
+        price: settings.price,
+        counts
+      };
+    }
+
+    function buildDeck() {
+      deck = [];
+      Object.keys(difficultySettings).forEach(key => {
+        for (let i = 0; i < difficultySettings[key].cards; i++) {
+          deck.push(makeOrder(key));
+        }
+      });
+      shuffle(deck);
+      used = 0;
+    }
+
+    function resetDeck() {
+      buildDeck();
+      showOrder(deck[0], true);
+      document.getElementById('status').textContent = 'Deck reset: 60 cards shuffled.';
+    }
+
+    function getOrderByMode() {
+      const mode = document.getElementById('mode').value;
+
+      if (mode === 'random') {
+        const keys = ['easy', 'medium', 'hard'];
+        return makeOrder(keys[rand(0, keys.length - 1)]);
+      }
+
+      if (mode === 'easy' || mode === 'medium' || mode === 'hard') {
+        return makeOrder(mode);
+      }
+
+      if (used >= deck.length) {
+        document.getElementById('status').textContent = 'All 60 orders used. Winner is the player with the most cash!';
+        return null;
+      }
+
+      const order = deck[used];
+      used++;
+      document.getElementById('status').textContent = `Card ${used} of 60`;
+      return order;
+    }
+
+    function nextOrder() {
+      const order = getOrderByMode();
+      if (order) showOrder(order);
+    }
+
+    function showOrder(order, previewOnly = false) {
+      const pizza = document.getElementById('pizza');
+      const list = document.getElementById('ingredientList');
+      pizza.innerHTML = '';
+      list.innerHTML = '';
+
+      document.getElementById('price').textContent = `£${order.price}`;
+      document.getElementById('difficulty').textContent = order.difficulty;
+      document.getElementById('orderName').textContent = `${order.difficulty} Pizza Order`;
+
+      Object.entries(order.counts).forEach(([key, amount]) => {
+        const ing = ingredients.find(i => i.key === key);
+        const row = document.createElement('div');
+        row.className = 'pill';
+        row.textContent = `${amount} × ${ing.name}`;
+        list.appendChild(row);
+      });
+
+      // Draw larger flat ingredients first, then smaller clear ingredients on top.
+      const drawOrder = ['cheese', 'mushroom', 'pepper', 'ham', 'sausage', 'olive'];
+      let toppingIndex = 0;
+      const totalToppings = Object.values(order.counts).reduce((a, b) => a + b, 0);
+
+      drawOrder.forEach(key => {
+        const amount = order.counts[key] || 0;
+        for (let i = 0; i < amount; i++) {
+          addTopping(key, pizza, toppingIndex, totalToppings);
+          toppingIndex++;
+        }
+      });
+
+      if (previewOnly) return;
+    }
+
+    function addTopping(key, pizza, index, total) {
+      const topping = document.createElement('div');
+      topping.className = `topping ${key}`;
+
+      // Keep original topping sizes.
+      const sizes = {
+        cheese: { w: 66, h: 66 },
+        mushroom: { w: 62, h: 62 },
+        pepper: { w: 72, h: 72 },
+        sausage: { w: 50, h: 50 },
+        ham: { w: 96, h: 42 },
+        olive: { w: 44, h: 44 }
+      };
+
+      const s = sizes[key];
+      topping.style.width = `${s.w}px`;
+      topping.style.height = `${s.h}px`;
+
+      // Random but evenly spread from the centre using a sunflower/golden-angle pattern.
+      // This avoids clumps while still looking naturally placed by hand.
+      const cx = 135;
+      const cy = 135;
+      const redRadius = 105;
+      const maxHalf = Math.max(s.w, s.h) / 2;
+      const safeRadius = redRadius - maxHalf - 4;
+
+      const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+      const t = total <= 1 ? 0 : (index + 0.5) / total;
+      const radius = Math.sqrt(t) * safeRadius;
+      const angle = index * goldenAngle + rand(-18, 18) * Math.PI / 180;
+
+      let x = cx + Math.cos(angle) * radius;
+      let y = cy + Math.sin(angle) * radius;
+
+      // Small hand-made nudge, still kept safely inside the red circle.
+      x += rand(-4, 4);
+      y += rand(-4, 4);
+
+      const dx = x - cx;
+      const dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > safeRadius) {
+        const clamp = safeRadius / dist;
+        x = cx + dx * clamp;
+        y = cy + dy * clamp;
+      }
+
+      const rotation = key === 'ham' ? rand(-30, 30) : rand(-7, 7);
+
+      topping.style.left = `${x}px`;
+      topping.style.top = `${y}px`;
+      topping.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+
+      // Larger/flatter ingredients sit behind smaller ones. Olives are solid black again.
+      const layer = {
+        cheese: 1,
+        mushroom: 4,
+        pepper: 5,
+        ham: 6,
+        sausage: 12,
+        olive: 14
+      };
+      topping.style.zIndex = layer[key] || 8;
+
+      pizza.appendChild(topping);
+    }
+
+    function toggleInfo() {
+      document.querySelector('.ingredients').classList.toggle('hidden');
+      document.querySelector('.tiny').classList.toggle('hidden');
+    }
+
+    buildDeck();
+    showOrder(deck[0], true);
+    document.getElementById('status').textContent = 'Ready. Tap Next Order to start.';
+  </script>
+</body>
+</html>
