@@ -210,9 +210,9 @@
     ];
 
     const difficultySettings = {
-      easy:   { label: 'Easy',   price: 10, cards: 30, minTypes: 2, maxTypes: 3, minTotal: 3,  maxTotal: 5 },
-      medium: { label: 'Medium', price: 20, cards: 20, minTypes: 3, maxTypes: 5, minTotal: 6,  maxTotal: 8 },
-      hard:   { label: 'Hard',   price: 30, cards: 10, minTypes: 5, maxTypes: 6, minTotal: 9,  maxTotal: 12 }
+      easy:   { label: 'Easy',   price: 10, cards: 15, minTypes: 2, maxTypes: 3, minTotal: 3,  maxTotal: 5 },
+      medium: { label: 'Medium', price: 20, cards: 10, minTypes: 3, maxTypes: 5, minTotal: 6,  maxTotal: 8 },
+      hard:   { label: 'Hard',   price: 30, cards: 5, minTypes: 5, maxTypes: 6, minTotal: 9,  maxTotal: 12 }
     };
 
     let deck = [];
@@ -279,7 +279,7 @@
     function resetDeck() {
       buildDeck();
       showOrder(deck[0], true);
-      document.getElementById('status').textContent = 'Deck reset: 60 cards shuffled.';
+      document.getElementById('status').textContent = 'Deck reset: 30 cards shuffled.';
     }
 
     function getOrderByMode() {
@@ -301,7 +301,7 @@
 
       const order = deck[used];
       used++;
-      document.getElementById('status').textContent = `Card ${used} of 60`;
+      document.getElementById('status').textContent = `Card ${used} of 30`;
       return order;
     }
 
@@ -370,24 +370,14 @@
       // Keep the whole ingredient safely inside the red pizza base.
       const safeRadius = redRadius - maxHalf - 6;
 
-      // Spread from the outside edge inwards, like placing toppings around the pizza first.
-      // This gives better visual spacing than starting in the middle.
+      // Spread evenly from the centre outward using a balanced sunflower pattern.
+      // This keeps the toppings naturally distributed around the whole pizza.
       const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-      const angle = index * goldenAngle + rand(-12, 12) * Math.PI / 180;
+      const angle = index * goldenAngle + rand(-10, 10) * Math.PI / 180;
 
-      const outerCount = Math.ceil(total * 0.65);
-      let radius;
-
-      if (index < outerCount) {
-        // First toppings go on the outer safe ring.
-        radius = safeRadius * rand(82, 100) / 100;
-      } else {
-        // Later toppings move towards the middle.
-        const innerIndex = index - outerCount;
-        const innerTotal = Math.max(1, total - outerCount);
-        const innerStep = innerTotal === 1 ? 0.45 : innerIndex / (innerTotal - 1);
-        radius = safeRadius * (0.55 - innerStep * 0.32);
-      }
+      // Gradually spread toppings from centre to edge.
+      const spread = total <= 1 ? 0.5 : (index + 1) / total;
+      const radius = Math.sqrt(spread) * safeRadius * 0.92;
 
       let x = cx + Math.cos(angle) * radius;
       let y = cy + Math.sin(angle) * radius;
