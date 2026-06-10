@@ -36,7 +36,28 @@
     select { background: white; grid-column: span 2; }
     .status { font-family: Arial, Helvetica, sans-serif; font-size: 14px; margin-top: 8px; color: #555; min-height: 20px; }
     .tiny { font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #555; max-width: 420px; margin: 10px auto; line-height: 1.35; }
-  </style>
+  
+details.ingredients {
+  max-width: 420px;
+  margin: 12px auto;
+}
+
+details summary {
+  cursor: pointer;
+  background: #333;
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+</style>
 </head>
 <body>
   <h1>Pizza Order Generator</h1>
@@ -52,10 +73,6 @@
       <div id="difficulty" class="difficulty">Easy</div>
     </div>
   </div>
-  <div class="ingredients">
-    <h2 id="orderName">Tap Next Order to start</h2>
-    <div id="ingredientList" class="list"></div>
-  </div>
   <div class="controls">
     <select id="mode">
       <option value="deck">Full shuffled 30-card deck</option>
@@ -68,6 +85,13 @@
     <button class="secondary" onclick="resetDeck()">Reset Deck</button>
   </div>
   <div id="status" class="status"></div>
+
+  <details class="ingredients">
+    <summary>Show Ingredients (Check Only)</summary>
+    <h2 id="orderName">Pizza Order</h2>
+    <div id="ingredientList" class="list"></div>
+  </details>
+
   <p class="tiny">Test rule: players only need to match the ingredient amounts shown. Shape and layout is illustrative.</p>
 
   <script>
