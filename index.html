@@ -86,23 +86,15 @@
     };
     let deck=[],used=0;
 
-    let audioCtx=null;
+    
+    const orderBell = new Audio('856337__loafdv__metal-bell-ding.mp3');
+
     function playDing(){
-      try{
-        if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-        const now=audioCtx.currentTime;
-        [[880,0.55],[1320,0.3],[2200,0.15]].forEach(([freq,gain])=>{
-          const osc=audioCtx.createOscillator();
-          const env=audioCtx.createGain();
-          osc.connect(env);env.connect(audioCtx.destination);
-          osc.type='sine';osc.frequency.value=freq;
-          env.gain.setValueAtTime(gain,now);
-          env.gain.exponentialRampToValueAtTime(0.001,now+0.9);
-          osc.start(now);osc.stop(now+0.9);
-        });
-      }catch(e){}
+      orderBell.currentTime = 0;
+      orderBell.play().catch(()=>{});
     }
-    const randF=(a,b)=>Math.random()*(b-a)+a;
+
+const randF=(a,b)=>Math.random()*(b-a)+a;
     const randI=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
     function shuffle(a){for(let i=a.length-1;i>0;i--){const j=randI(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
 
