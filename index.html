@@ -213,7 +213,7 @@ const randF=(a,b)=>Math.random()*(b-a)+a;
       document.getElementById('price').textContent='£'+order.price;
       document.getElementById('difficulty').textContent=order.difficulty;
       document.getElementById('orderName').textContent=order.difficulty+' Pizza Order';
-      const swatchColour={cheese:'#f5d800',mushroom:'#8a8a7a',pepper:'#2e9e3a',sausage:'#cc2222',ham:'#e85ca0',olive:'#1a1a1a'};
+      const swatchColour={cheese:'#f5d800',mushroom:'#8a8a7a',pepper:'#2e9e3a',sausage:'#8B1E2D;',ham:'#e85ca0',olive:'#1a1a1a'};
       Object.entries(order.counts).forEach(([key,amount])=>{
         const ing=ingredients.find(i=>i.key===key);
         const pill=document.createElement('div');
